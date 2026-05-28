@@ -1,0 +1,160 @@
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.timeline-day {
+  display: flex;
+  gap: 20px;
+  position: relative;
+  margin-bottom: 30px;
+}
+
+.timeline-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.timeline-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-top: 8px;
+  background: #611f69;
+  box-shadow: 0 0 0 5px #f4edf5;
+}
+
+.timeline-day:not(:last-child) .timeline-marker::after {
+  content: "";
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: calc(100% + 26px);
+  background: #e8e8ed;
+}
+
+.timeline-content {
+  flex: 1;
+  background: #fbfbfd;
+  border: 1px solid #ececf1;
+  border-left: 3px solid #611f69;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.timeline-date {
+  margin: 0 0 14px;
+  color: #1f2a44;
+}
+
+.logs-for-date {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.log-card {
+  border: 1px solid #e8e8ed;
+  border-radius: 12px;
+  padding: 18px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(29, 28, 29, 0.08);
+}
+
+.log-card:hover {
+  border-color: #d7d7de;
+  box-shadow: 0 4px 10px rgba(29, 28, 29, 0.12);
+  transform: translateY(-1px);
+}
+
+.log-header,
+.log-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.hours-badge {
+  background: #1264a3;
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  background: #f4edf5;
+  color: #611f69;
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-size: 12px;
+}
+
+.log-section {
+  margin-bottom: 10px;
+}
+
+.log-section strong {
+  color: #1d1c1d;
+  font-size: 13px;
+}
+
+.log-section p {
+  margin: 4px 0 0;
+  color: #454245;
+  border-left: 3px solid #d8d8de;
+  padding-left: 12px;
+  line-height: 1.45;
+}
+
+.log-section.blockers p {
+  border-left-color: #f97066;
+  color: #b42318;
+}
+
+.log-actions {
+  border-top: 1px solid #ececf1;
+  margin-top: 12px;
+  padding-top: 12px;
+  display: flex;
+  gap: 10px;
+}
+
+.btn-edit,
+.btn-delete {
+  flex: 1;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-edit {
+  background: #007a5a;
+}
+
+.btn-delete {
+  background: #c23934;
+}
+
+.timeline-empty {
+  text-align: center;
+  color: #667085;
+  padding: 32px 12px;
+}

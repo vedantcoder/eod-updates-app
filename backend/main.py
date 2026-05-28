@@ -11,7 +11,8 @@ from typing import List
 load_dotenv()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+# Use SERVICE_ROLE_KEY for backend API (allows writes even with RLS enabled)
+SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 app = FastAPI(title="DevPulse API", version="1.0.0")
@@ -97,12 +98,21 @@ def get_current_user_info(current_user: dict = Depends(get_current_user)):
             raise HTTPException(status_code=404, detail="User not found")
         
         user = response.data[0]
+        
+        # Fetch team name if team_id exists
+        team_name = None
+        if user.get("team_id"):
+            team_response = supabase.table("teams").select("name").eq("id", user["team_id"]).execute()
+            if team_response.data:
+                team_name = team_response.data[0]["name"]
+        
         return UserResponse(
             id=str(user["id"]),
             email=user["email"],
             name=user.get("name", "User"),
             is_admin=user.get("is_admin", False),
             team_id=user.get("team_id"),
+            team_name=team_name,
             created_at=user["created_at"]
         )
     except Exception as e:
@@ -153,6 +163,20 @@ def get_my_logs(
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/logs/check-today")
+def check_todays_log(current_user: dict = Depends(get_current_user)):
+    """Check if user already has a log for today"""
+    try:
+        response = supabase.table("eod_logs").select("id").eq(
+            "user_id", current_user["user_id"]
+        ).eq("date", str(date.today())).execute()
+        
+        if response.data:
+            return {"exists": True, "log_id": response.data[0]["id"]}
+        return {"exists": False, "log_id": None}
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/logs", response_model=EODLogResponse)
@@ -462,37 +486,44 @@ def admin_get_user_stats(
 @app.get("/admin/stats")
 def admin_get_collective_stats(
     current_user: dict = Depends(get_current_user),
-    team_id: str = Query(None, description="Team ID for team-specific stats")
+    team_id: str = Query(None, description="Team ID for team-specific stats"),
+    week_start: str = Query(None, description="Week start date (YYYY-MM-DD) for weekly stats")
 ):
     try:
         verify_admin(current_user)
-        
-        # Get all users (or team users)
+
+        users_query = supabase.table("users").select("id").eq("is_admin", False)
         if team_id:
-            users_response = supabase.table("users").select("id").eq("team_id", team_id).execute()
-        else:
-            users_response = supabase.table("users").select("id").execute()
-        
-        user_ids = [u["id"] for u in users_response.data or []]
-        
-        # Get all logs
-        total_hours = 0
+            users_query = users_query.eq("team_id", team_id)
+        users_response = users_query.execute()
+        user_ids = [str(u["id"]) for u in (users_response.data or [])]
+
         total_logs = 0
-        
-        for uid in user_ids:
-            logs_response = supabase.table("eod_logs").select("hours").eq("user_id", uid).execute()
+        total_hours = 0
+
+        if user_ids:
+            logs_query = supabase.table("eod_logs").select("hours,user_id").in_("user_id", user_ids)
+
+            if week_start:
+                import datetime as dt
+                week_date = dt.datetime.strptime(week_start, "%Y-%m-%d").date()
+                week_end = week_date + dt.timedelta(days=6)
+                logs_query = logs_query.gte("date", str(week_date)).lte("date", str(week_end))
+
+            logs_response = logs_query.execute()
             logs = logs_response.data or []
-            total_logs += len(logs)
-            total_hours += sum(log.get("hours", 0) for log in logs)
-        
-        avg_hours_per_log = total_hours / total_logs if total_logs > 0 else 0
-        
+            total_logs = len(logs)
+            total_hours = sum(log.get("hours", 0) for log in logs)
+
+        avg_hours_per_log = (total_hours / total_logs) if total_logs > 0 else 0
+
         return {
             "total_users": len(user_ids),
             "total_logs": total_logs,
             "total_hours_logged": total_hours,
             "avg_hours_per_log": round(avg_hours_per_log, 2),
-            "team_id": team_id or "all"
+            "team_id": team_id or "all",
+            "week_start": week_start or None
         }
     except Exception as e:
         if isinstance(e, HTTPException):

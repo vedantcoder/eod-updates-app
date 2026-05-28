@@ -1,0 +1,105 @@
+.team-user-page {
+  min-height: 100vh;
+  background: #f8f8fb;
+  padding: 24px;
+}
+
+.team-user-container {
+  max-width: 1050px;
+  margin: 0 auto;
+}
+
+.team-user-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.title-block h1 {
+  margin: 0;
+  font-size: 28px;
+  color: #1d1c1d;
+}
+
+.title-block p {
+  margin: 6px 0 0;
+  color: #616061;
+}
+
+.back-btn,
+.analysis-btn {
+  border: 1px solid #e8e8ed;
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.analysis-btn {
+  background: #611f69;
+  color: #fff;
+  border: none;
+}
+
+.week-tabs-card,
+.logs-section {
+  background: #fff;
+  border: 1px solid #e8e8ed;
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.week-tabs-card {
+  margin-bottom: 16px;
+}
+
+.week-tabs-card h2 {
+  margin: 0 0 12px;
+}
+
+.week-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 8px;
+  padding-bottom: 2px;
+}
+
+.week-tab {
+  border: 1px solid #e8e8ed;
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  min-width: 170px;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.week-tab.active {
+  border-color: #611f69;
+  background: #f4edf5;
+}
+
+.week-tab:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: #f7f7f9;
+}
+
+.week-tab span {
+  font-weight: 600;
+}
+
+.week-tab small {
+  color: #616061;
+}
+
+.loading {
+  color: #616061;
+}

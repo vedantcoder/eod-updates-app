@@ -23,6 +23,7 @@ class UserResponse(BaseModel):
     name: str
     is_admin: bool
     team_id: Optional[str] = None
+    team_name: Optional[str] = None
     created_at: datetime
 
 # Team Models

@@ -74,9 +74,9 @@ export default function Analytics() {
     <div className="analytics-container">
       <header className="analytics-header">
         <div className="header-left">
-          <h1>📈 Analytics</h1>
+          <h1>Analysis</h1>
           <p>Welcome, {user?.name || 'User'}!</p>
-          {user?.team_id && <span className="team-badge">Team ID: {user.team_id.substring(0, 8)}...</span>}
+          {user?.team_name && <span className="team-badge">Team: {user.team_name}</span>}
         </div>
         <div className="header-actions">
           <button onClick={() => navigate('/dashboard')} className="nav-btn">
@@ -90,8 +90,6 @@ export default function Analytics() {
 
       <main className="analytics-content">
         {error && <div className="error-message">{error}</div>}
-
-        {/* Week Selector */}
         <section className="week-selector">
           <button 
             onClick={() => setSelectedWeek(selectedWeek - 1)}
@@ -113,15 +111,14 @@ export default function Analytics() {
           <p className="loading">Loading analytics...</p>
         ) : stats ? (
           <>
-            {/* Stats Cards */}
             <section className="stats-grid">
               <div className="stat-card">
-                <div className="stat-value">{stats.total_hours}h</div>
+                <div className="stat-value">{stats.total_hours}hr</div>
                 <div className="stat-label">Total Hours</div>
               </div>
 
               <div className="stat-card">
-                <div className="stat-value">{stats.avg_hours_per_day.toFixed(1)}h</div>
+                <div className="stat-value">{stats.avg_hours_per_day.toFixed(1)}hr</div>
                 <div className="stat-label">Avg Hours/Day</div>
               </div>
 
@@ -131,9 +128,8 @@ export default function Analytics() {
               </div>
             </section>
 
-            {/* Tags Section */}
             <section className="tags-section">
-              <h2>🏷️ Top Tags</h2>
+              <h2>Top Tags</h2>
               
               {tags.length === 0 ? (
                 <p className="no-tags">No tags used this week</p>
@@ -157,10 +153,9 @@ export default function Analytics() {
               )}
             </section>
 
-            {/* Daily Breakdown */}
             {stats.logs && stats.logs.length > 0 && (
               <section className="daily-section">
-                <h2>📅 Daily Breakdown</h2>
+                <h2>Daily Breakdown</h2>
                 <div className="daily-logs">
                   {stats.logs.map((log, idx) => (
                     <div key={idx} className="daily-item">
@@ -171,7 +166,7 @@ export default function Analytics() {
                           day: 'numeric'
                         })}
                       </div>
-                      <div className="daily-hours">{log.hours}h</div>
+                      <div className="daily-hours">{log.hours}hr</div>
                       <div className="daily-progress">
                         <div 
                           className="progress-bar"

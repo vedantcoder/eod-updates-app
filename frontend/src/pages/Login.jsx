@@ -17,7 +17,6 @@ export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  // Fetch teams on component mount
   useEffect(() => {
     const fetchTeams = async () => {
       try {

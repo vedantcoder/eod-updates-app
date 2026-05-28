@@ -31,19 +31,6 @@ CREATE TABLE users (
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_team_id ON users(team_id);
 
--- ============================================
--- TAGS TABLE
--- ============================================
-CREATE TABLE tags (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name TEXT NOT NULL UNIQUE,
-    created_at TIMESTAMP DEFAULT now()
-);
-
--- Create index on tag name for faster lookups
-CREATE INDEX idx_tags_name ON tags(name);
-
--- ============================================
 -- EOD_LOGS TABLE
 -- ============================================
 CREATE TABLE eod_logs (
@@ -54,6 +41,7 @@ CREATE TABLE eod_logs (
     in_progress TEXT,
     blockers TEXT,
     hours INTEGER DEFAULT 0,
+    tags TEXT[] DEFAULT '{}',
     created_at TIMESTAMP DEFAULT now(),
     updated_at TIMESTAMP DEFAULT now()
 );
@@ -62,19 +50,6 @@ CREATE TABLE eod_logs (
 CREATE INDEX idx_eod_logs_user_date ON eod_logs(user_id, date DESC);
 CREATE INDEX idx_eod_logs_date ON eod_logs(date);
 
--- ============================================
--- LOG_TAGS JUNCTION TABLE (Many-to-Many)
--- ============================================
-CREATE TABLE log_tags (
-    log_id UUID NOT NULL REFERENCES eod_logs(id) ON DELETE CASCADE,
-    tag_id UUID NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
-    PRIMARY KEY (log_id, tag_id)
-);
-
--- Create index on tag_id for faster tag searches
-CREATE INDEX idx_log_tags_tag_id ON log_tags(tag_id);
-
--- ============================================
 -- FUNCTIONS FOR ANALYTICS
 -- ============================================
 

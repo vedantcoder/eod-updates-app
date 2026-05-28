@@ -11,18 +11,18 @@ ON CONFLICT DO NOTHING;
 -- Insert Users
 INSERT INTO users (id, email, name, password_hash, is_admin, team_id, created_at) VALUES
   -- Admin user (password: admin123)
-  ('550e8400-e29b-41d4-a716-446655440010', 'admin@devpulse.com', 'Admin User', '$2b$12$TQv6ta3w_4VCZjATIUQwKOW8vQAVGI4l2wZSmNHl5xw5N5JMPfAky', true, '550e8400-e29b-41d4-a716-446655440001', NOW()),
+  ('550e8400-e29b-41d4-a716-446655440010', 'admin@devpulse.com', 'Admin User', '$2b$12$kRBAoOoAfTfNtA9sRUQEle43FgR56t2/N1qnx0O1162BhIMYkmG9O', true, '550e8400-e29b-41d4-a716-446655440001', NOW()),
   
   -- Frontend Team Users
-  ('550e8400-e29b-41d4-a716-446655440011', 'alice@devpulse.com', 'Alice Johnson', '$2b$12$TQv6ta3w_4VCZjATIUQwKOW8vQAVGI4l2wZSmNHl5xw5N5JMPfAky', false, '550e8400-e29b-41d4-a716-446655440001', NOW()),
-  ('550e8400-e29b-41d4-a716-446655440012', 'bob@devpulse.com', 'Bob Smith', '$2b$12$TQv6ta3w_4VCZjATIUQwKOW8vQAVGI4l2wZSmNHl5xw5N5JMPfAky', false, '550e8400-e29b-41d4-a716-446655440001', NOW()),
+  ('550e8400-e29b-41d4-a716-446655440011', 'alice@devpulse.com', 'Alice Johnson', '$2b$12$kRBAoOoAfTfNtA9sRUQEle43FgR56t2/N1qnx0O1162BhIMYkmG9O', false, '550e8400-e29b-41d4-a716-446655440001', NOW()),
+  ('550e8400-e29b-41d4-a716-446655440012', 'bob@devpulse.com', 'Bob Smith', '$2b$12$kRBAoOoAfTfNtA9sRUQEle43FgR56t2/N1qnx0O1162BhIMYkmG9O', false, '550e8400-e29b-41d4-a716-446655440001', NOW()),
   
   -- Backend Team Users
-  ('550e8400-e29b-41d4-a716-446655440013', 'charlie@devpulse.com', 'Charlie Brown', '$2b$12$TQv6ta3w_4VCZjATIUQwKOW8vQAVGI4l2wZSmNHl5xw5N5JMPfAky', false, '550e8400-e29b-41d4-a716-446655440002', NOW()),
-  ('550e8400-e29b-41d4-a716-446655440014', 'diana@devpulse.com', 'Diana Prince', '$2b$12$TQv6ta3w_4VCZjATIUQwKOW8vQAVGI4l2wZSmNHl5xw5N5JMPfAky', false, '550e8400-e29b-41d4-a716-446655440002', NOW()),
+  ('550e8400-e29b-41d4-a716-446655440013', 'charlie@devpulse.com', 'Charlie Brown', '$2b$12$kRBAoOoAfTfNtA9sRUQEle43FgR56t2/N1qnx0O1162BhIMYkmG9O', false, '550e8400-e29b-41d4-a716-446655440002', NOW()),
+  ('550e8400-e29b-41d4-a716-446655440014', 'diana@devpulse.com', 'Diana Prince', '$2b$12$kRBAoOoAfTfNtA9sRUQEle43FgR56t2/N1qnx0O1162BhIMYkmG9O', false, '550e8400-e29b-41d4-a716-446655440002', NOW()),
   
   -- DevOps Team User
-  ('550e8400-e29b-41d4-a716-446655440015', 'evan@devpulse.com', 'Evan Davis', '$2b$12$TQv6ta3w_4VCZjATIUQwKOW8vQAVGI4l2wZSmNHl5xw5N5JMPfAky', false, '550e8400-e29b-41d4-a716-446655440003', NOW())
+  ('550e8400-e29b-41d4-a716-446655440015', 'evan@devpulse.com', 'Evan Davis', '$2b$12$kRBAoOoAfTfNtA9sRUQEle43FgR56t2/N1qnx0O1162BhIMYkmG9O', false, '550e8400-e29b-41d4-a716-446655440003', NOW())
 ON CONFLICT DO NOTHING;
 
 -- Insert EOD Logs for this week (adjust dates as needed)

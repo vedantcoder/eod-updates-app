@@ -9,7 +9,6 @@ const api = axios.create({
   },
 });
 
-// Add token to requests
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -35,6 +34,31 @@ export const logsApi = {
   getLog: (logId) => api.get(`/logs/${logId}`),
   updateLog: (logId, data) => api.put(`/logs/${logId}`, data),
   deleteLog: (logId) => api.delete(`/logs/${logId}`),
+};
+
+export const analyticsApi = {
+  getMyStats: (weekStart) =>
+    api.get("/analytics/my-stats", { params: weekStart ? { week_start: weekStart } : {} }),
+  getMyTags: () => api.get("/analytics/my-tags"),
+  getUserStats: (userId, weekStart) =>
+    api.get(`/admin/users/${userId}/stats`, { params: weekStart ? { week_start: weekStart } : {} }),
+  getGlobalStats: (teamId = null, weekStart = null) =>
+    api.get("/admin/stats", {
+      params: {
+        ...(teamId ? { team_id: teamId } : {}),
+        ...(weekStart ? { week_start: weekStart } : {}),
+      },
+    }),
+};
+
+export const adminApi = {
+  getUsers: () => api.get("/admin/users"),
+  getUserLogs: (userId, dateFrom, dateTo) =>
+    api.get(`/admin/users/${userId}/logs`, { params: { date_from: dateFrom, date_to: dateTo } }),
+};
+
+export const teamsApi = {
+  getTeams: () => api.get("/teams"),
 };
 
 export default api;
