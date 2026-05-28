@@ -20,6 +20,7 @@ CREATE TABLE teams (
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
     password_hash TEXT NOT NULL,
     is_admin BOOLEAN DEFAULT false,
     team_id UUID REFERENCES teams(id) ON DELETE SET NULL,
