@@ -9,7 +9,6 @@ const api = axios.create({
   },
 });
 
-// Add token to requests
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -19,8 +18,11 @@ api.interceptors.request.use((config) => {
 });
 
 export const authApi = {
-  register: (email, name, password) =>
-    api.post("/auth/register", { email, name, password }),
+  register: (email, name, password, team_id = null) => {
+    const data = { email, name, password };
+    if (team_id) data.team_id = team_id;
+    return api.post("/auth/register", data);
+  },
   login: (email, password) => api.post("/auth/login", { email, password }),
   getCurrentUser: () => api.get("/auth/me"),
 };
@@ -34,22 +36,35 @@ export const logsApi = {
   deleteLog: (logId) => api.delete(`/logs/${logId}`),
 };
 
-export default api;
-
-export const adminApi = {
-  getAllUsers: () => api.get("/admin/users"),
-  getUserLogs: (userId) => api.get(`/admin/users/${userId}/logs`),
-  updateUserTeam: (userId, team) =>
-    api.put(`/admin/users/${userId}/team`, { team }),
+export const analyticsApi = {
+  getMyStats: (weekStart) =>
+    api.get("/analytics/my-stats", {
+      params: weekStart ? { week_start: weekStart } : {},
+    }),
+  getMyTags: () => api.get("/analytics/my-tags"),
+  getUserStats: (userId, weekStart) =>
+    api.get(`/admin/users/${userId}/stats`, {
+      params: weekStart ? { week_start: weekStart } : {},
+    }),
+  getGlobalStats: (teamId = null, weekStart = null) =>
+    api.get("/admin/stats", {
+      params: {
+        ...(teamId ? { team_id: teamId } : {}),
+        ...(weekStart ? { week_start: weekStart } : {}),
+      },
+    }),
 };
 
-export const analyticsApi = {
-  getMyStats: () => api.get("/analytics/me"),
-  getAllStats: () => api.get("/analytics/all"),
-  getTeamStats: (team) => api.get(`/analytics/team/${team}`),
+export const adminApi = {
+  getUsers: () => api.get("/admin/users"),
+  getUserLogs: (userId, dateFrom, dateTo) =>
+    api.get(`/admin/users/${userId}/logs`, {
+      params: { date_from: dateFrom, date_to: dateTo },
+    }),
 };
 
 export const teamsApi = {
   getTeams: () => api.get("/teams"),
-  createTeam: (name) => api.post("/teams", { name }),
 };
+
+export default api;
