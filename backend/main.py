@@ -42,6 +42,7 @@ def register(user_data: UserRegister):
         hashed_pwd = hash_password(user_data.password)
         result = supabase.table("users").insert({
             "email": user_data.email,
+            "name": user_data.name,
             "password_hash": hashed_pwd,
             "is_admin": False
         }).execute()
@@ -86,7 +87,8 @@ def get_current_user_info(current_user: dict = Depends(get_current_user)):
         return UserResponse(
             id=str(user["id"]),
             email=user["email"],
-            is_admin=user["is_admin"],
+            name=user.get("name", "User"),
+            is_admin=user.get("is_admin", False),
             team_id=user.get("team_id"),
             created_at=user["created_at"]
         )

@@ -5,6 +5,7 @@ from datetime import date, datetime
 # Auth Models
 class UserRegister(BaseModel):
     email: EmailStr
+    name: str
     password: str
 
 class UserLogin(BaseModel):
@@ -18,6 +19,7 @@ class TokenResponse(BaseModel):
 class UserResponse(BaseModel):
     id: str
     email: str
+    name: str
     is_admin: bool
     team_id: Optional[str] = None
     created_at: datetime

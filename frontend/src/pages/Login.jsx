@@ -6,6 +6,7 @@ import './Auth.css';
 
 export default function Login() {
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,7 +21,7 @@ export default function Login() {
 
     try {
       const response = isRegister
-        ? await authApi.register(email, password)
+        ? await authApi.register(email, name, password)
         : await authApi.login(email, password);
 
       const { access_token } = response.data;
@@ -51,6 +52,19 @@ export default function Login() {
               required
             />
           </div>
+          
+          {isRegister && (
+            <div className="form-group">
+              <label>Full Name:</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                placeholder="Enter your full name"
+              />
+            </div>
+          )}
           
           <div className="form-group">
             <label>Password:</label>
