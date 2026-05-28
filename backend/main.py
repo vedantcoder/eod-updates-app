@@ -6,7 +6,7 @@ import os
 from dotenv import load_dotenv
 from models import UserRegister, UserLogin, TokenResponse, UserResponse, EODLogCreate, EODLogResponse
 from auth import hash_password, verify_password, create_access_token, get_current_user
-from typing import Dict
+from typing import List
 
 load_dotenv()
 
@@ -24,6 +24,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ============================================
+# HEALTH & INFO ENDPOINTS
+# ============================================
+
 @app.get("/")
 def hello():
     return {"message": "DevPulse API is running!"}
@@ -31,6 +35,10 @@ def hello():
 @app.get("/health")
 def health():
     return {"status": "healthy"}
+
+# ============================================
+# AUTH ENDPOINTS
+# ============================================
 
 @app.post("/auth/register", response_model=TokenResponse)
 def register(user_data: UserRegister):
@@ -97,8 +105,56 @@ def get_current_user_info(current_user: dict = Depends(get_current_user)):
             raise e
         raise HTTPException(status_code=500, detail=str(e))
 
+# ============================================
+# 
+# ============================================
+
+# Helper function to get logs data
+def get_logs_data(user_id: str, log_id: str = None, limit: int = 50, offset: int = 0):
+    try:
+        if log_id:
+            response = supabase.table("eod_logs").select("*").eq("id", log_id).execute()
+        else:
+            response = supabase.table("eod_logs").select("*").eq("user_id", user_id).order("date", desc=True).range(offset, offset + limit - 1).execute()
+        
+        return response.data if response.data else []
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+@app.get("/logs/my-logs", response_model=List[EODLogResponse])
+def get_my_logs(
+    current_user: dict = Depends(get_current_user),
+    limit: int = Query(50, description="Number of logs to fetch", ge=1, le=100),
+    offset: int = Query(0, description="Offset for pagination", ge=0)
+):
+    try:
+        logs_data = get_logs_data(current_user["user_id"], limit=limit, offset=offset)
+        
+        logs = []
+        for log in logs_data:
+            logs.append(EODLogResponse(
+                id=str(log["id"]),
+                user_id=str(log["user_id"]),
+                date=log["date"],
+                done=log.get("done"),
+                in_progress=log.get("in_progress"),
+                blockers=log.get("blockers"),
+                hours=log.get("hours", 0),
+                tags=log.get("tags", []),
+                created_at=log["created_at"]
+            ))
+        
+        return logs
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/logs", response_model=EODLogResponse)
-def create_eod_log(log_data: EODLogCreate, current_user: dict = Depends(get_current_user)):
+def create_eod_log(
+    log_data: EODLogCreate,
+    current_user: dict = Depends(get_current_user)
+):
     try:
         result = supabase.table("eod_logs").insert({
             "user_id": current_user["user_id"],
@@ -118,10 +174,10 @@ def create_eod_log(log_data: EODLogCreate, current_user: dict = Depends(get_curr
             id=str(log["id"]),
             user_id=str(log["user_id"]),
             date=log["date"],
-            done=log["done"],
-            in_progress=log["in_progress"],
-            blockers=log["blockers"],
-            hours=log["hours"],
+            done=log.get("done"),
+            in_progress=log.get("in_progress"),
+            blockers=log.get("blockers"),
+            hours=log.get("hours", 0),
             tags=log.get("tags", []),
             created_at=log["created_at"]
         )
@@ -130,22 +186,19 @@ def create_eod_log(log_data: EODLogCreate, current_user: dict = Depends(get_curr
             raise e
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/logs/my-logs")
-def get_my_logs(current_user: dict = Depends(get_current_user), limit: int = Query(50), offset: int = Query(0)):
-    try:
-        response = supabase.table("eod_logs").select("*").eq("user_id", current_user["user_id"]).order("date", desc=True).range(offset, offset + limit - 1).execute()
-        return response.data
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
 @app.get("/logs/{log_id}", response_model=EODLogResponse)
-def get_log(log_id: str = Path(...), current_user: dict = Depends(get_current_user)):
+def get_log(
+    log_id: str = Path(..., description="ID of the EOD log", example="550e8400-e29b-41d4-a716-446655440000"),
+    current_user: dict = Depends(get_current_user)
+):
     try:
-        response = supabase.table("eod_logs").select("*").eq("id", log_id).execute()
-        if not response.data:
+        logs_data = get_logs_data(current_user["user_id"], log_id=log_id)
+        
+        if not logs_data:
             raise HTTPException(status_code=404, detail="Log not found")
         
-        log = response.data[0]
+        log = logs_data[0]
+        
         if str(log["user_id"]) != current_user["user_id"]:
             raise HTTPException(status_code=403, detail="Access denied")
         
@@ -153,10 +206,10 @@ def get_log(log_id: str = Path(...), current_user: dict = Depends(get_current_us
             id=str(log["id"]),
             user_id=str(log["user_id"]),
             date=log["date"],
-            done=log["done"],
-            in_progress=log["in_progress"],
-            blockers=log["blockers"],
-            hours=log["hours"],
+            done=log.get("done"),
+            in_progress=log.get("in_progress"),
+            blockers=log.get("blockers"),
+            hours=log.get("hours", 0),
             tags=log.get("tags", []),
             created_at=log["created_at"]
         )
@@ -166,15 +219,21 @@ def get_log(log_id: str = Path(...), current_user: dict = Depends(get_current_us
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.put("/logs/{log_id}", response_model=EODLogResponse)
-def update_log(log_id: str = Path(...), log_data: EODLogCreate = None, current_user: dict = Depends(get_current_user)):
+def update_log(
+    log_id: str = Path(..., description="ID of the EOD log to update", example="550e8400-e29b-41d4-a716-446655440000"),
+    log_data: EODLogCreate = None,
+    current_user: dict = Depends(get_current_user)
+):
     try:
-        response = supabase.table("eod_logs").select("user_id").eq("id", log_id).execute()
-        if not response.data:
+        # Verify ownership
+        logs_data = get_logs_data(current_user["user_id"], log_id=log_id)
+        if not logs_data:
             raise HTTPException(status_code=404, detail="Log not found")
         
-        if str(response.data[0]["user_id"]) != current_user["user_id"]:
+        if str(logs_data[0]["user_id"]) != current_user["user_id"]:
             raise HTTPException(status_code=403, detail="Access denied")
         
+        # Prepare update data
         update_data = {}
         if log_data.done is not None:
             update_data["done"] = log_data.done
@@ -188,17 +247,22 @@ def update_log(log_id: str = Path(...), log_data: EODLogCreate = None, current_u
             update_data["tags"] = log_data.tags
         
         update_data["updated_at"] = datetime.utcnow().isoformat()
+        
+        # Update in database
         result = supabase.table("eod_logs").update(update_data).eq("id", log_id).execute()
+        
+        if not result.data:
+            raise HTTPException(status_code=500, detail="Failed to update log")
         
         log = result.data[0]
         return EODLogResponse(
             id=str(log["id"]),
             user_id=str(log["user_id"]),
             date=log["date"],
-            done=log["done"],
-            in_progress=log["in_progress"],
-            blockers=log["blockers"],
-            hours=log["hours"],
+            done=log.get("done"),
+            in_progress=log.get("in_progress"),
+            blockers=log.get("blockers"),
+            hours=log.get("hours", 0),
             tags=log.get("tags", []),
             created_at=log["created_at"]
         )
@@ -208,16 +272,22 @@ def update_log(log_id: str = Path(...), log_data: EODLogCreate = None, current_u
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.delete("/logs/{log_id}")
-def delete_log(log_id: str = Path(...), current_user: dict = Depends(get_current_user)):
+def delete_log(
+    log_id: str = Path(..., description="ID of the EOD log to delete", example="550e8400-e29b-41d4-a716-446655440000"),
+    current_user: dict = Depends(get_current_user)
+):
     try:
-        response = supabase.table("eod_logs").select("user_id").eq("id", log_id).execute()
-        if not response.data:
+        # Verify ownership
+        logs_data = get_logs_data(current_user["user_id"], log_id=log_id)
+        if not logs_data:
             raise HTTPException(status_code=404, detail="Log not found")
         
-        if str(response.data[0]["user_id"]) != current_user["user_id"]:
+        if str(logs_data[0]["user_id"]) != current_user["user_id"]:
             raise HTTPException(status_code=403, detail="Access denied")
         
+        # Delete from database
         supabase.table("eod_logs").delete().eq("id", log_id).execute()
+        
         return {"message": "Log deleted successfully"}
     except Exception as e:
         if isinstance(e, HTTPException):
