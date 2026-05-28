@@ -1,0 +1,496 @@
+.dashboard-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 20px 30px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header-left h1 {
+  margin: 0;
+  font-size: 28px;
+  color: #333;
+}
+
+.user-info {
+  margin-top: 8px;
+}
+
+.user-info p {
+  margin: 0 0 4px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.team-badge {
+  display: inline-block;
+  background-color: #667eea;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.nav-btn,
+.logout-btn {
+  padding: 10px 20px;
+  background-color: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.nav-btn:hover {
+  background-color: #5568d3;
+}
+
+.logout-btn {
+  background-color: #ff6b6b;
+  color: white;
+}
+
+.logout-btn:hover {
+  background-color: #ff5252;
+}
+
+.dashboard-content {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* Form Section */
+.form-section {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.form-section h2 {
+  margin-top: 0;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.log-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #333;
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 10px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.3s;
+  background-color: #ffffff;
+  color: #333333;
+}
+
+/* Override browser dark mode */
+@media (prefers-color-scheme: dark) {
+  .form-group input,
+  .form-group textarea {
+    background-color: #ffffff !important;
+    color: #333333 !important;
+  }
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 600px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.btn-submit,
+.btn-cancel {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-submit {
+  background-color: #667eea;
+  color: white;
+  flex: 1;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background-color: #5568d3;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  background-color: #f0f0f0;
+  color: #333;
+  padding: 12px 20px;
+}
+
+.btn-cancel:hover {
+  background-color: #e0e0e0;
+}
+
+/* Logs Section */
+.logs-section {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.logs-section h2 {
+  margin-top: 0;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* Week Selector */
+.week-selector {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin: 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.week-selector h2 {
+  margin: 0;
+  flex: 1;
+  text-align: center;
+  color: #333;
+  font-size: 18px;
+}
+
+.week-nav-btn {
+  padding: 8px 16px;
+  background-color: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.week-nav-btn:hover:not(:disabled) {
+  background-color: #5568d3;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.week-nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Timeline */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.timeline-day {
+  display: flex;
+  gap: 20px;
+  position: relative;
+  margin-bottom: 30px;
+}
+
+.timeline-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.timeline-dot {
+  width: 12px;
+  height: 12px;
+  background-color: #667eea;
+  border-radius: 50%;
+  margin-top: 8px;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.timeline-day:not(:last-child) .timeline-marker::after {
+  content: '';
+  position: absolute;
+  width: 2px;
+  height: calc(100% + 30px);
+  background-color: #e0e0e0;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 0;
+}
+
+.timeline-content {
+  flex: 1;
+  background: #fafafa;
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 3px solid #667eea;
+}
+
+.timeline-date {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.logs-for-date {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.timeline-log {
+  background: white;
+  border: 1px solid #e0e0e0;
+  margin: 0;
+}
+
+.log-card {
+  border: 2px solid #f0f0f0;
+  border-radius: 8px;
+  padding: 20px;
+  transition: all 0.3s;
+  background: #fafafa;
+}
+
+.log-card:hover {
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  background: white;
+}
+
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.log-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.log-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hours-badge {
+  background-color: #667eea;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.tag {
+  background-color: #e0e7ff;
+  color: #667eea;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.log-content {
+  margin-bottom: 15px;
+}
+
+.log-section {
+  margin-bottom: 12px;
+}
+
+.log-section:last-child {
+  margin-bottom: 0;
+}
+
+.log-section strong {
+  display: block;
+  color: #333;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.log-section p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+  line-height: 1.5;
+  padding-left: 10px;
+  border-left: 3px solid #e0e0e0;
+}
+
+.log-section.blockers p {
+  border-left-color: #ff6b6b;
+  color: #d32f2f;
+}
+
+.log-actions {
+  display: flex;
+  gap: 10px;
+  padding-top: 15px;
+  border-top: 2px solid #f0f0f0;
+}
+
+.btn-edit,
+.btn-delete {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-edit {
+  background-color: #4caf50;
+  color: white;
+}
+
+.btn-edit:hover {
+  background-color: #45a049;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+.btn-delete {
+  background-color: #ff6b6b;
+  color: white;
+}
+
+.btn-delete:hover {
+  background-color: #ff5252;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+}
+
+.loading,
+.no-logs {
+  text-align: center;
+  color: #999;
+  padding: 40px 20px;
+  font-size: 16px;
+}
+
+.error-message {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  border-left: 4px solid #c62828;
+}
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+
+  .form-section,
+  .logs-section {
+    padding: 20px;
+  }
+
+  .log-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .log-meta {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .log-actions {
+    flex-direction: column;
+  }
+}

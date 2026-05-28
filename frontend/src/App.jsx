@@ -3,16 +3,14 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { authApi } from './api/api';
 import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import Analytics from './pages/Analytics';
+import AdminDashboard from './pages/AdminDashboard';
 import './App.css';
-
-// Placeholder components (to be built)
-const Dashboard = () => <div className="container"><h1>Dashboard - Coming Soon</h1></div>;
-const Analytics = () => <div className="container"><h1>Analytics - Coming Soon</h1></div>;
-const AdminPanel = () => <div className="container"><h1>Admin Panel - Coming Soon</h1></div>;
 
 function ProtectedRoute({ children }) {
   const { token } = useAuth();
-  return token ? children : <Navigate to="/" />;
+  return token ? children : <Navigate to="/login" />;
 }
 
 export default function App() {
@@ -29,7 +27,8 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Navigate to="/dashboard" />} />
         <Route
           path="/dashboard"
           element={
@@ -50,7 +49,7 @@ export default function App() {
           path="/admin"
           element={
             <ProtectedRoute>
-              <AdminPanel />
+              <AdminDashboard />
             </ProtectedRoute>
           }
         />

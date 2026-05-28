@@ -19,8 +19,11 @@ api.interceptors.request.use((config) => {
 });
 
 export const authApi = {
-  register: (email, name, password) =>
-    api.post("/auth/register", { email, name, password }),
+  register: (email, name, password, team_id = null) => {
+    const data = { email, name, password };
+    if (team_id) data.team_id = team_id;
+    return api.post("/auth/register", data);
+  },
   login: (email, password) => api.post("/auth/login", { email, password }),
   getCurrentUser: () => api.get("/auth/me"),
 };

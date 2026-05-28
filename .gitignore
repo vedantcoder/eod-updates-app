@@ -60,3 +60,4 @@ htmlcov/
 .dmypy.json
 dmypy.json
 *.pdf
+README.md

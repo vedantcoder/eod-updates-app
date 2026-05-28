@@ -1,18 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../api/api';
 import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
 import './Auth.css';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
+  const [teamId, setTeamId] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
+  const [teams, setTeams] = useState([]);
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  // Fetch teams on component mount
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/teams`
+        );
+        setTeams(response.data.teams || []);
+        if (response.data.teams && response.data.teams.length > 0) {
+          setTeamId(response.data.teams[0].id);
+        }
+      } catch (err) {
+        console.error('Failed to fetch teams', err);
+      }
+    };
+    
+    if (isRegister) {
+      fetchTeams();
+    }
+  }, [isRegister]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,7 +45,7 @@ export default function Login() {
 
     try {
       const response = isRegister
-        ? await authApi.register(email, name, password)
+        ? await authApi.register(email, name, password, teamId)
         : await authApi.login(email, password);
 
       const { access_token } = response.data;
@@ -54,16 +78,34 @@ export default function Login() {
           </div>
           
           {isRegister && (
-            <div className="form-group">
-              <label>Full Name:</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                placeholder="Enter your full name"
-              />
-            </div>
+            <>
+              <div className="form-group">
+                <label>Full Name:</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  placeholder="Enter your full name"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Team:</label>
+                <select
+                  value={teamId}
+                  onChange={(e) => setTeamId(e.target.value)}
+                  required
+                >
+                  <option value="">Select a team</option>
+                  {teams.map(team => (
+                    <option key={team.id} value={team.id}>
+                      {team.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </>
           )}
           
           <div className="form-group">
