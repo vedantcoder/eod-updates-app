@@ -48,12 +48,17 @@ def register(user_data: UserRegister):
             raise HTTPException(status_code=400, detail="User already exists")
         
         hashed_pwd = hash_password(user_data.password)
-        result = supabase.table("users").insert({
+        insert_data = {
             "email": user_data.email,
             "name": user_data.name,
             "password_hash": hashed_pwd,
             "is_admin": False
-        }).execute()
+        }
+        
+        if user_data.team_id:
+            insert_data["team_id"] = user_data.team_id
+        
+        result = supabase.table("users").insert(insert_data).execute()
         
         if not result.data:
             raise HTTPException(status_code=500, detail="Failed to create user")
@@ -289,6 +294,260 @@ def delete_log(
         supabase.table("eod_logs").delete().eq("id", log_id).execute()
         
         return {"message": "Log deleted successfully"}
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ============================================
+# ANALYTICS ENDPOINTS
+# ============================================
+
+def verify_admin(current_user: dict):
+    """Helper to verify user is admin"""
+    try:
+        response = supabase.table("users").select("is_admin").eq("id", current_user["user_id"]).execute()
+        if not response.data or not response.data[0]["is_admin"]:
+            raise HTTPException(status_code=403, detail="Admin access required")
+        return True
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=403, detail="Access denied")
+
+@app.get("/analytics/my-stats")
+def get_user_weekly_stats(
+    current_user: dict = Depends(get_current_user),
+    week_start: str = Query(None, description="Week start date (YYYY-MM-DD). Defaults to current week Monday")
+):
+    try:
+        import datetime as dt
+        
+        # Calculate week start (Monday)
+        if week_start:
+            week_date = dt.datetime.strptime(week_start, "%Y-%m-%d").date()
+        else:
+            today = dt.date.today()
+            week_date = today - dt.timedelta(days=today.weekday())
+        
+        week_end = week_date + dt.timedelta(days=6)
+        
+        # Get logs for the week
+        response = supabase.table("eod_logs").select("*").eq("user_id", current_user["user_id"]).gte("date", str(week_date)).lte("date", str(week_end)).execute()
+        
+        logs = response.data or []
+        
+        total_hours = sum(log.get("hours", 0) for log in logs)
+        log_count = len(logs)
+        avg_hours = total_hours / log_count if log_count > 0 else 0
+        
+        return {
+            "week_start": str(week_date),
+            "week_end": str(week_end),
+            "total_hours": total_hours,
+            "avg_hours_per_day": round(avg_hours, 2),
+            "log_count": log_count,
+            "logs": logs
+        }
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/analytics/my-tags")
+def get_user_tag_frequency(current_user: dict = Depends(get_current_user)):
+    try:
+        # Get all user's logs
+        response = supabase.table("eod_logs").select("tags").eq("user_id", current_user["user_id"]).execute()
+        
+        logs = response.data or []
+        tag_count = {}
+        
+        for log in logs:
+            tags = log.get("tags", [])
+            if tags:
+                for tag in tags:
+                    tag_count[tag] = tag_count.get(tag, 0) + 1
+        
+        # Sort by frequency
+        sorted_tags = sorted(tag_count.items(), key=lambda x: x[1], reverse=True)
+        
+        return {
+            "total_unique_tags": len(tag_count),
+            "tags": [{"tag": tag, "count": count} for tag, count in sorted_tags]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ============================================
+# ADMIN ENDPOINTS
+# ============================================
+
+@app.get("/admin/users")
+def admin_list_users(current_user: dict = Depends(get_current_user)):
+    try:
+        verify_admin(current_user)
+        
+        response = supabase.table("users").select("id, email, name, team_id, is_admin, created_at").execute()
+        return {"users": response.data or []}
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/admin/users/{user_id}/logs")
+def admin_get_user_logs(
+    user_id: str = Path(..., description="User ID"),
+    current_user: dict = Depends(get_current_user),
+    date_from: str = Query(None, description="Date from (YYYY-MM-DD)"),
+    date_to: str = Query(None, description="Date to (YYYY-MM-DD)")
+):
+    try:
+        verify_admin(current_user)
+        
+        query = supabase.table("eod_logs").select("*").eq("user_id", user_id)
+        
+        if date_from:
+            query = query.gte("date", date_from)
+        if date_to:
+            query = query.lte("date", date_to)
+        
+        response = query.order("date", desc=True).execute()
+        return {"logs": response.data or []}
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/admin/users/{user_id}/stats")
+def admin_get_user_stats(
+    user_id: str = Path(..., description="User ID"),
+    current_user: dict = Depends(get_current_user),
+    week_start: str = Query(None, description="Week start date (YYYY-MM-DD)")
+):
+    try:
+        verify_admin(current_user)
+        
+        import datetime as dt
+        
+        if week_start:
+            week_date = dt.datetime.strptime(week_start, "%Y-%m-%d").date()
+        else:
+            today = dt.date.today()
+            week_date = today - dt.timedelta(days=today.weekday())
+        
+        week_end = week_date + dt.timedelta(days=6)
+        
+        response = supabase.table("eod_logs").select("*").eq("user_id", user_id).gte("date", str(week_date)).lte("date", str(week_end)).execute()
+        
+        logs = response.data or []
+        total_hours = sum(log.get("hours", 0) for log in logs)
+        log_count = len(logs)
+        avg_hours = total_hours / log_count if log_count > 0 else 0
+        
+        return {
+            "week_start": str(week_date),
+            "week_end": str(week_end),
+            "user_id": user_id,
+            "total_hours": total_hours,
+            "avg_hours_per_day": round(avg_hours, 2),
+            "log_count": log_count,
+            "logs": logs
+        }
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/admin/stats")
+def admin_get_collective_stats(
+    current_user: dict = Depends(get_current_user),
+    team_id: str = Query(None, description="Team ID for team-specific stats")
+):
+    try:
+        verify_admin(current_user)
+        
+        # Get all users (or team users)
+        if team_id:
+            users_response = supabase.table("users").select("id").eq("team_id", team_id).execute()
+        else:
+            users_response = supabase.table("users").select("id").execute()
+        
+        user_ids = [u["id"] for u in users_response.data or []]
+        
+        # Get all logs
+        total_hours = 0
+        total_logs = 0
+        
+        for uid in user_ids:
+            logs_response = supabase.table("eod_logs").select("hours").eq("user_id", uid).execute()
+            logs = logs_response.data or []
+            total_logs += len(logs)
+            total_hours += sum(log.get("hours", 0) for log in logs)
+        
+        avg_hours_per_log = total_hours / total_logs if total_logs > 0 else 0
+        
+        return {
+            "total_users": len(user_ids),
+            "total_logs": total_logs,
+            "total_hours_logged": total_hours,
+            "avg_hours_per_log": round(avg_hours_per_log, 2),
+            "team_id": team_id or "all"
+        }
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/admin/users/{user_id}/team")
+def admin_assign_user_to_team(
+    user_id: str = Path(..., description="User ID"),
+    team_id: str = Query(..., description="Team ID to assign"),
+    current_user: dict = Depends(get_current_user)
+):
+    try:
+        verify_admin(current_user)
+        
+        result = supabase.table("users").update({"team_id": team_id}).eq("id", user_id).execute()
+        
+        if not result.data:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        return {"message": "User assigned to team", "user": result.data[0]}
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ============================================
+# TEAMS ENDPOINTS (Admin Only)
+# ============================================
+
+@app.get("/teams")
+def list_teams():
+    try:
+        response = supabase.table("teams").select("*").execute()
+        return {"teams": response.data or []}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/admin/teams")
+def create_team(
+    team_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    try:
+        verify_admin(current_user)
+        
+        result = supabase.table("teams").insert({
+            "name": team_data.get("name"),
+            "description": team_data.get("description", "")
+        }).execute()
+        
+        if not result.data:
+            raise HTTPException(status_code=500, detail="Failed to create team")
+        
+        return {"message": "Team created", "team": result.data[0]}
     except Exception as e:
         if isinstance(e, HTTPException):
             raise e

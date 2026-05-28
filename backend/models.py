@@ -7,6 +7,7 @@ class UserRegister(BaseModel):
     email: EmailStr
     name: str
     password: str
+    team_id: Optional[str] = None
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -22,6 +23,13 @@ class UserResponse(BaseModel):
     name: str
     is_admin: bool
     team_id: Optional[str] = None
+    created_at: datetime
+
+# Team Models
+class Team(BaseModel):
+    id: str
+    name: str
+    description: Optional[str] = None
     created_at: datetime
 
 # EOD Log Models
@@ -52,6 +60,8 @@ class EODLogResponse(BaseModel):
 
 # Analytics Models
 class WeeklyStats(BaseModel):
+    week_start: str
+    week_end: str
     total_hours: int
     avg_hours_per_day: float
     log_count: int
@@ -69,8 +79,10 @@ class CollectiveStats(BaseModel):
 class UserBasicInfo(BaseModel):
     id: str
     email: str
+    name: str
     is_admin: bool
     team_id: Optional[str]
+    created_at: datetime
 
 class UserWithStats(BaseModel):
     user: UserBasicInfo
