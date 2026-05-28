@@ -35,3 +35,21 @@ export const logsApi = {
 };
 
 export default api;
+
+export const adminApi = {
+  getAllUsers: () => api.get("/admin/users"),
+  getUserLogs: (userId) => api.get(`/admin/users/${userId}/logs`),
+  updateUserTeam: (userId, team) =>
+    api.put(`/admin/users/${userId}/team`, { team }),
+};
+
+export const analyticsApi = {
+  getMyStats: () => api.get("/analytics/me"),
+  getAllStats: () => api.get("/analytics/all"),
+  getTeamStats: (team) => api.get(`/analytics/team/${team}`),
+};
+
+export const teamsApi = {
+  getTeams: () => api.get("/teams"),
+  createTeam: (name) => api.post("/teams", { name }),
+};
