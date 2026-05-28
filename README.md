@@ -16,7 +16,7 @@ A full-stack web application where developers post daily EOD (End-of-Day) update
 - **Frontend**: React with Vite
 - **Database**: Supabase (PostgreSQL)
 - **Auth**: HTTPBearer + JWT tokens
-- **Deployment**: Railway (backend), Vercel (frontend)
+- **Deployment**: Render (backend), Vercel (frontend)
 
 ## Project Structure
 
